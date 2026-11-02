@@ -2,6 +2,8 @@ export const SITE = {
   name: "Zacess",
   url: "https://zacess.com",
   email: "contact@zacess.com",
+  // security reports only, so they never sit in the general inbox
+  securityEmail: "security@zacess.com",
   github: "https://github.com/zacesshq",
   repo: "https://github.com/zacesshq/zacess",
   app: "https://app.zacess.com",
