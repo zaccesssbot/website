@@ -9,22 +9,24 @@ const path = Astro.url.pathname;
       <img class="logo logo-light" src="/assets/brand/zacess-lockup-light.svg" alt="" width="124" height="36">
       <img class="logo logo-dark" src="/assets/brand/zacess-lockup-dark.svg" alt="" width="124" height="36">
     </a>
-    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-      <span class="menu-label">Menu</span>
-    </button>
-    <nav class="site-nav" id="site-menu" aria-label="Main">
-      <ul>
-        {MAIN_NAV.map((item) => (
-          <li class={item.external ? "nav-app" : undefined}>
-            <a href={item.href} aria-current={path === item.href ? "page" : undefined}>
-              {item.label}
-              {item.external ? <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg> : null}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
+    <details class="site-menu">
+      <summary class="menu-toggle" aria-controls="site-menu">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        <span class="menu-label">Menu</span>
+      </summary>
+      <nav class="site-nav" id="site-menu" aria-label="Main">
+        <ul>
+          {MAIN_NAV.map((item) => (
+            <li class={item.external ? "nav-app" : undefined}>
+              <a href={item.href} aria-current={path === item.href ? "page" : undefined}>
+                {item.label}
+                {item.external ? <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg> : null}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </details>
     <ThemeSwitch />
   </div>
 </header>

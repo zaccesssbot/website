@@ -1,0 +1,153 @@
+/* the documentation: a sidebar of every page, the article and an "On this page" list, drawn in the
+   high contrast themes through the --docs-* variables /docs/theme.css writes from the themes release.
+   Every text pair is at least 7:1 and every line at least 3:1 (scripts/check-contrast.mjs). The
+   current page carries a bar beside its name, a shape as well as a weight, never a colour alone */
+.docs-shell { background: var(--docs-bg); color: var(--docs-text); --focus: var(--docs-focus); }
+.docs-shell a { color: var(--docs-link); }
+.docs { display: grid; gap: 1.5rem 2.5rem; grid-template-columns: minmax(0, 1fr); padding-top: 1.5rem; padding-bottom: 4rem; }
+@media (min-width: 64rem) {
+  .docs { grid-template-columns: 17rem minmax(0, 1fr); padding-top: 2.5rem; }
+}
+
+/* the sidebar: a list of every page, 44 pixel rows, sticky and scrolling on its own on a wide screen.
+   Narrow screens fold it behind a button; without the script it is shown as it is */
+.docs-toggle {
+  display: none; align-items: center; gap: 0.5rem; width: 100%; min-height: 2.75rem; padding: 0.4rem 0.8rem;
+  font: inherit; font-weight: 700; color: var(--docs-text); text-align: left;
+  background: transparent; border: 1px solid var(--docs-line); border-radius: 10px; cursor: pointer;
+}
+.docs-toggle svg { width: 1.15rem; height: 1.15rem; flex: none; }
+.docs-toggle:hover { border-color: var(--docs-text); }
+.docs-toggle[aria-expanded="true"] { border-color: var(--docs-text); box-shadow: inset 0 0 0 1px var(--docs-text); }
+.js .docs-toggle { display: flex; }
+.js .docs-nav-body { display: none; padding-top: 0.75rem; }
+.js .docs-nav-body.open { display: block; }
+@media (min-width: 64rem) {
+  .js .docs-side .docs-toggle { display: none; }
+  .js .docs-nav-body, .js .docs-nav-body.open { display: block; padding-top: 0; }
+  .docs-nav { position: sticky; top: 5rem; max-height: calc(100vh - 6rem); overflow-y: auto; padding-right: 0.5rem; }
+}
+.docs-tree, .docs-tree ul { list-style: none; margin: 0; padding: 0; }
+.docs-tree li { margin: 0; }
+.docs-section { margin-top: 1rem; }
+.docs-section h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--docs-muted); margin: 0 0 0.25rem; padding-left: 0.9rem; }
+.docs-tree a {
+  position: relative; display: flex; align-items: center; min-height: 2.75rem; padding: 0.4rem 0.75rem 0.4rem 0.9rem;
+  color: var(--docs-text); text-decoration: none; line-height: 1.3; font-size: 1rem; border-radius: 6px;
+}
+.docs-tree a:hover { text-decoration: underline; }
+.docs-tree ul ul a { padding-left: 1.7rem; }
+.docs-tree ul ul ul a { padding-left: 2.6rem; font-size: 0.95rem; }
+.docs-tree a[aria-current="page"] { font-weight: 700; background: var(--docs-surface-alt); }
+.docs-tree a[aria-current="page"]::before { content: ""; position: absolute; left: 0; top: 0.5rem; bottom: 0.5rem; width: 0.25rem; border-radius: 2px; background: var(--docs-text); }
+.docs-tree a:focus-visible { outline-offset: -3px; }
+
+/* search: a field above the list, results in place of it while there is a query */
+.docs-search { display: none; flex-direction: column; gap: 0.3rem; margin: 0 0 1rem; }
+.js .docs-search { display: flex; }
+.docs-search label { font-weight: 700; font-size: 0.95rem; }
+.docs-search-row { display: flex; gap: 0.5rem; }
+.docs-search input {
+  flex: 1 1 auto; min-width: 0; min-height: 2.75rem; padding: 0.4rem 0.75rem; font: inherit; color: var(--docs-text); background: var(--docs-bg);
+  border: 2px solid var(--docs-text); border-radius: 8px;
+}
+.docs-search button {
+  flex: none; min-height: 2.75rem; min-width: 2.75rem; padding: 0.4rem 0.8rem; font: inherit; font-weight: 700;
+  color: var(--docs-text); background: transparent; border: 2px solid var(--docs-text); border-radius: 8px; cursor: pointer;
+}
+.docs-search button:hover { text-decoration: underline; }
+.docs-results[hidden] { display: none; }
+.docs-results-count { margin: 0 0 0.5rem; font-weight: 700; font-size: 0.95rem; color: var(--docs-muted); }
+.docs-results-list { list-style: none; margin: 0 0 1rem; padding: 0; }
+.docs-results-list li { margin: 0 0 0.5rem; padding: 0.5rem 0.75rem; border: 1px solid var(--docs-line); border-radius: 8px; }
+.docs-results-list a { display: inline-block; min-height: 2.75rem; padding-top: 0.45rem; font-weight: 700; }
+.docs-results-list p { margin: 0; font-size: 0.95rem; color: var(--docs-muted); }
+.docs-results-list p mark { background: var(--mark); color: var(--ink); }
+.docs-tree.searching { display: none; }
+
+/* the article and, on a wide screen, the "On this page" list in a column beside it */
+.docs-main { display: grid; gap: 1.5rem 2.5rem; grid-template-columns: minmax(0, 1fr); align-content: start; }
+@media (min-width: 78rem) {
+  .docs-main { grid-template-columns: minmax(0, 1fr) 13rem; }
+  .docs-toc { order: 1; position: sticky; top: 5rem; max-height: calc(100vh - 6rem); overflow-y: auto; }
+}
+.docs-toc h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--docs-muted); margin: 0 0 0.4rem; }
+.docs-toc ul { list-style: none; margin: 0; padding: 0; }
+.docs-toc li { margin: 0; }
+.docs-toc a { display: block; min-height: 2.75rem; padding: 0.55rem 0.5rem 0.55rem 0.75rem; color: var(--docs-text); text-decoration: none; border-left: 2px solid var(--docs-line); font-size: 0.95rem; line-height: 1.3; }
+.docs-toc a:hover { text-decoration: underline; border-left-color: var(--docs-text); }
+.js .docs-toc h2 { display: none; }
+.js .docs-toc ul { display: none; padding-top: 0.5rem; }
+.js .docs-toc ul.open { display: block; }
+@media (min-width: 78rem) {
+  .js .docs-toc .docs-toggle { display: none; }
+  .js .docs-toc h2 { display: block; }
+  .js .docs-toc ul, .js .docs-toc ul.open { display: block; padding-top: 0; }
+}
+
+.docs-article { min-width: 0; max-width: 46rem; }
+.docs-article h1 { max-width: none; font-size: clamp(2rem, 5vw, 2.8rem); margin-bottom: 0.75rem; }
+.docs-origin { margin: 0 0 2rem; font-size: 0.95rem; color: var(--docs-muted); }
+.docs-origin a { display: inline-block; min-height: 2.75rem; padding-top: 0.45rem; }
+.docs-body h2 { font-size: 1.6rem; margin: 2.5rem 0 0.75rem; padding-top: 1.25rem; border-top: 1px solid var(--docs-line); }
+.docs-body h3 { font-size: 1.25rem; margin: 1.75rem 0 0.5rem; }
+.docs-body h4 { font-size: 1.05rem; margin: 1.25rem 0 0.4rem; }
+.docs-body p, .docs-body ul, .docs-body ol { margin: 0 0 1rem; }
+.docs-body li { margin-bottom: 0.4rem; }
+.docs-body li > ul, .docs-body li > ol { margin: 0.4rem 0 0; }
+.docs-body img { display: block; max-width: 100%; height: auto; margin: 1rem 0; border: 1px solid var(--docs-line); border-radius: 6px; }
+.docs-body blockquote { margin: 1.5rem 0; padding: 0.25rem 0 0.25rem 1.25rem; border-left: 4px solid var(--docs-text); }
+.docs-body blockquote p { margin: 0 0 0.5rem; }
+.docs-body hr { border: 0; border-top: 1px solid var(--docs-line); margin: 2rem 0; }
+.docs-body table { font-size: 0.95rem; margin: 0; }
+.docs-body .table-scroll { margin: 1rem 0 1.5rem; }
+.docs-body th, .docs-body td { border-color: var(--docs-line); }
+.docs-body thead th { background: var(--docs-surface-alt); }
+.docs-body code { font: 400 0.92em/1.5 ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace; background: var(--docs-surface-alt); border: 1px solid var(--docs-line); border-radius: 4px; padding: 0.05em 0.3em; overflow-wrap: anywhere; }
+.docs-body a code { color: inherit; }
+/* code blocks: the two high contrast themes' colours come through /docs/code.css as classes; the
+   light or dark variable each class sets is chosen here, with the site's colour mode */
+.docs-body pre { margin: 1rem 0 1.5rem; padding: 0.9rem 1rem; overflow-x: auto; border: 1px solid var(--docs-line); border-radius: 8px; font-size: 0.95rem; line-height: 1.6; tab-size: 4; scrollbar-width: auto; }
+.docs-body pre code { background: none; border: 0; padding: 0; font-size: inherit; line-height: inherit; }
+.docs-body pre:focus-visible { outline-offset: -4px; }
+.docs-body pre, .docs-body pre span { color: var(--shiki-light, var(--docs-text)); background-color: var(--shiki-light-bg, transparent); font-style: var(--shiki-light-font-style, normal); font-weight: var(--shiki-light-font-weight, normal); text-decoration: var(--shiki-light-text-decoration, none); }
+.docs-body pre { background-color: var(--shiki-light-bg, var(--docs-surface)); }
+:root[data-theme="dark"] .docs-body pre, :root[data-theme="dark"] .docs-body pre span { color: var(--shiki-dark, var(--docs-text)); background-color: var(--shiki-dark-bg, transparent); font-style: var(--shiki-dark-font-style, normal); font-weight: var(--shiki-dark-font-weight, normal); text-decoration: var(--shiki-dark-text-decoration, none); }
+:root[data-theme="dark"] .docs-body pre { background-color: var(--shiki-dark-bg, var(--docs-surface)); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .docs-body pre, :root:not([data-theme="light"]) .docs-body pre span { color: var(--shiki-dark, var(--docs-text)); background-color: var(--shiki-dark-bg, transparent); font-style: var(--shiki-dark-font-style, normal); font-weight: var(--shiki-dark-font-weight, normal); text-decoration: var(--shiki-dark-text-decoration, none); }
+  :root:not([data-theme="light"]) .docs-body pre { background-color: var(--shiki-dark-bg, var(--docs-surface)); }
+}
+
+/* the overview and the product pages: a list of pages, each with its first line */
+.docs-list { list-style: none; margin: 0 0 1.5rem; padding: 0; }
+.docs-list li { margin: 0 0 0.75rem; padding: 0.75rem 1rem; border: 1px solid var(--docs-line); border-radius: 8px; }
+.docs-list li > a { display: inline-block; min-height: 2.75rem; padding-top: 0.45rem; font-weight: 700; }
+.docs-list p { margin: 0; color: var(--docs-muted); }
+.docs-home-section { padding: 0; }
+.docs-home-section h2 { margin-top: 2rem; }
+.docs-home-section > p { margin: 0 0 0.75rem; }
+
+@media (forced-colors: active) {
+  .docs-tree a[aria-current="page"]::before { background: CanvasText; }
+  .docs-toggle, .docs-list li, .docs-results-list li, .docs-body pre, .docs-body img { border-color: CanvasText; }
+}
+@media print {
+  .docs-side, .docs-toc, .docs-toggle { display: none !important; }
+  .docs { display: block; }
+}
+
+/* diagrams: drawn at sync time in the two high contrast themes, one image per theme, the one that
+   matches the colour mode shown; the Mermaid source sits under a disclosure for anyone who reads */
+.diagram { margin: 1.5rem 0; }
+.diagram img { display: block; max-width: 100%; height: auto; margin: 0; border: 0; }
+.diagram .diagram-dark { display: none; }
+:root[data-theme="dark"] .diagram .diagram-light { display: none; }
+:root[data-theme="dark"] .diagram .diagram-dark { display: block; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .diagram .diagram-light { display: none; }
+  :root:not([data-theme="light"]) .diagram .diagram-dark { display: block; }
+}
+.diagram details { margin: 0.75rem 0 0; border: 1px solid var(--docs-line); border-radius: 8px; }
+.diagram summary { cursor: pointer; min-height: 2.75rem; padding: 0.6rem 1rem; font-weight: 700; }
+.diagram details > pre { margin: 0 1rem 1rem; }

@@ -13,6 +13,7 @@ export const SITE = {
 export const MAIN_NAV: { href: string; label: string; external?: boolean }[] = [
   { href: "/features/", label: "Features" },
   { href: "/how-it-works/", label: "How it works" },
+  { href: "/docs/", label: "Docs" },
   { href: "/roadmap/", label: "Roadmap" },
   { href: "/accessibility/", label: "Accessibility" },
   { href: "/open-source/", label: "Open source" },
@@ -32,6 +33,19 @@ export const FOOTER_COLUMNS = [
       { href: "/how-it-works/", label: "How it works" },
       { href: "/roadmap/", label: "Roadmap" },
       { href: "/faq/", label: "FAQ" },
+    ],
+  },
+  {
+    title: "Docs",
+    links: [
+      { href: "/docs/", label: "Documentation" },
+      { href: "/docs/install/reader/", label: "Install" },
+      { href: "/docs/reader/", label: "Reader" },
+      { href: "/docs/scenes/", label: "Scenes" },
+      { href: "/docs/games/", label: "Games" },
+      { href: "/docs/themes/", label: "Themes" },
+      { href: "/docs/contribute/contributing/", label: "Contribute" },
+      { href: "/docs/reference/scenes-cli/", label: "Reference" },
     ],
   },
   {

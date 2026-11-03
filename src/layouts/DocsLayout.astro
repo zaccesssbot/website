@@ -1,0 +1,101 @@
+---
+import "../styles/docs.css";
+import BaseLayout from "./BaseLayout.astro";
+import { getCollection } from "astro:content";
+import { docsNav, DOCS_HOME, type NavLink } from "../data/docs-nav";
+
+interface Heading { depth: number; slug: string; text: string }
+interface Props {
+  title: string;
+  description: string;
+  /** the address of this page, so the sidebar can mark it */
+  href: string;
+  headings?: Heading[];
+  /** where a synced page came from; a landing page has none */
+  origin?: { product: string; refLabel: string; release?: string; sourceUrl: string; path: string };
+}
+const { title, description, href, headings = [], origin } = Astro.props;
+
+const entries = await getCollection("docs");
+const titles = new Map<string, string>(entries.map((e) => [e.id, e.data.title]));
+const nav = docsNav(titles);
+const toc = headings.filter((h) => h.depth === 2);
+const current = (link: string) => (link === href ? "page" : undefined);
+---
+<BaseLayout title={title} description={description}>
+  <Fragment slot="head">
+    <link rel="stylesheet" href="/docs/theme.css">
+    <link rel="stylesheet" href="/docs/code.css">
+  </Fragment>
+  <div class="docs-shell">
+    <div class="wrap docs">
+      <div class="docs-side">
+        <button class="docs-toggle" type="button" aria-expanded="false" aria-controls="docs-nav-body">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          Documentation menu
+        </button>
+        <nav class="docs-nav" aria-label="Documentation">
+          <div class="docs-nav-body" id="docs-nav-body">
+            <form class="docs-search" role="search" action={DOCS_HOME} method="get">
+              <label for="docs-q">Search the documentation</label>
+              <div class="docs-search-row">
+                <input type="search" id="docs-q" name="q" autocomplete="off" spellcheck="false">
+                <button type="submit">Search</button>
+              </div>
+            </form>
+            <div class="docs-results" id="docs-results" hidden>
+              <p class="docs-results-count" role="status"></p>
+              <ul class="docs-results-list"></ul>
+            </div>
+            <ul class="docs-tree">
+              <li><a href={DOCS_HOME} aria-current={current(DOCS_HOME)}>Overview</a></li>
+              {nav.map((section) => (
+                <li class="docs-section">
+                  <h2>{section.title}</h2>
+                  <ul>
+                    {section.links.map((link: NavLink) => (
+                      <li>
+                        <a href={link.href} aria-current={current(link.href)}>{link.label}</a>
+                        {link.children && link.children.length > 0 && (
+                          <ul>
+                            {link.children.map((child) => (
+                              <li><a href={child.href} aria-current={current(child.href)}>{child.label}</a></li>
+                            ))}
+                          </ul>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </nav>
+      </div>
+      <div class="docs-main">
+        {toc.length > 1 && (
+          <nav class="docs-toc" aria-labelledby="docs-toc-title">
+            <button class="docs-toggle docs-toc-toggle" type="button" aria-expanded="false" aria-controls="docs-toc-list">On this page</button>
+            <h2 id="docs-toc-title">On this page</h2>
+            <ul id="docs-toc-list">
+              {toc.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}
+            </ul>
+          </nav>
+        )}
+        <article class="docs-article" data-pagefind-body>
+          <h1>{title}</h1>
+          {origin && (
+            <p class="docs-origin" data-pagefind-ignore>
+              From {origin.product} {origin.release ? `v${origin.release}` : origin.refLabel}. <a href={origin.sourceUrl}>Edit this page on GitHub</a>
+            </p>
+          )}
+          <div class="docs-body">
+            <slot />
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+  <script is:inline src="/docs-nav.js" defer></script>
+  <script is:inline src="/docs-search.js" defer></script>
+</BaseLayout>

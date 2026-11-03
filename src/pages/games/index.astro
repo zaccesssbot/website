@@ -253,15 +253,25 @@ tar -xzf ${first}`;
   <section class="band" aria-labelledby="install">
     <div class="wrap">
       <h2 id="install">Install</h2>
+      <p class="intro">The games are one program, <code>zacess-games</code>. Sound is played by the system's own player (<code>afplay</code> on macOS, PipeWire, PulseAudio or ALSA on Linux and PowerShell on Windows), so nothing else is needed. The four routes, in the order the <a href="/docs/install/games/">install page</a> gives them:</p>
       <ol class="steps single">
         <li>
-          <h3>With Cargo</h3>
-          <p>From the release tag on GitHub. Needs Rust {data.rust} or later and a C compiler, since Lua is built in. Sound is played by the system's own player, so nothing else is needed.</p>
-          <pre class="snippet" tabindex="0" aria-label="Install command"><code>{`cargo install --locked --git ${REPO} --tag ${data.tag} zacess-games`}</code></pre>
+          <h3>macOS and Linux with Homebrew</h3>
+          <p>The Homebrew tap and the winget package follow the 0.3.0 release. Until each is live, Cargo or a release archive works on every platform.</p>
+          <pre class="snippet" tabindex="0" aria-label="Install with Homebrew"><code>brew install zacesshq/tap/zacess-games</code></pre>
         </li>
         <li>
-          <h3>Or a release build</h3>
-          <p>Each build on the <a href={RELEASE}>{data.tag} release</a> has a checksum file beside it. Check the sum, unpack the archive and put <code>zacess-games</code> somewhere on your <code>PATH</code>.</p>
+          <h3>Windows with winget</h3>
+          <pre class="snippet" tabindex="0" aria-label="Install with winget"><code>winget install Zacess.Games</code></pre>
+        </li>
+        <li>
+          <h3>Any platform with Cargo</h3>
+          <p>Needs Rust {data.rust} or later and a C compiler, since Lua 5.4 is built into the program.</p>
+          <pre class="snippet" tabindex="0" aria-label="Install with Cargo"><code>cargo install --locked zacess-games</code></pre>
+        </li>
+        <li>
+          <h3>From a release</h3>
+          <p>Each build on the <a href={RELEASE}>{data.tag} release</a> has a <code>.sha256</code> file beside it and holds the guides as well as the program. Check the sum, unpack the archive and put <code>zacess-games</code> (or <code>zacess-games.exe</code>) somewhere on your <code>PATH</code>. The <a href="/docs/install/games/">install page</a> has the detail.</p>
           <div class="table-scroll" tabindex="0" role="region" aria-labelledby="builds-caption">
             <table class="builds">
               <caption id="builds-caption">Release builds for {data.tag}</caption>

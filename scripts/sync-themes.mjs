@@ -15,6 +15,7 @@
 // GITHUB_TOKEN, when set, lifts the API rate limit.
 import { readFileSync, writeFileSync, readdirSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
+import { latestTag as latest, raw as fetchRaw } from "./lib/release.mjs";
 
 const REPO = "zacesshq/themes";
 const DATA = new URL("../src/data/", import.meta.url).pathname;
@@ -22,40 +23,8 @@ const DATA = new URL("../src/data/", import.meta.url).pathname;
 const PREVIEW = "deep-contrast-dark";
 const IMAGES = new URL("../public/themes/images/", import.meta.url).pathname;
 const strict = process.argv.includes("--strict");
-const TIMEOUT = 15000;
-
-const headers = { "User-Agent": "zacess-website-sync", Accept: "application/vnd.github+json" };
-if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
-
-async function get(url, init = {}) {
-  const res = await fetch(url, { ...init, signal: AbortSignal.timeout(TIMEOUT) });
-  if (!res.ok) throw new Error(`${url} answered ${res.status}`);
-  return res;
-}
-
-const SEMVER = /^v(\d+)\.(\d+)\.(\d+)$/;
-const newer = (a, b) => {
-  const x = a.match(SEMVER).slice(1).map(Number);
-  const y = b.match(SEMVER).slice(1).map(Number);
-  for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] > y[i];
-  return false;
-};
-
-// the newest vX.Y.Z tag rather than GitHub's latest release, because the release workflow publishes
-// to the stores on the tag and the GitHub release is only made afterwards on a maintainer's machine
-async function latestTag() {
-  const pinned = process.env.THEMES_TAG?.trim();
-  if (pinned) {
-    if (!SEMVER.test(pinned)) throw new Error(`THEMES_TAG ${pinned} is not a vX.Y.Z tag`);
-    return pinned;
-  }
-  const tags = await (await get(`https://api.github.com/repos/${REPO}/tags?per_page=100`, { headers })).json();
-  const releases = tags.map((t) => t.name).filter((n) => SEMVER.test(n));
-  if (!releases.length) throw new Error(`no vX.Y.Z tags in ${REPO}`);
-  return releases.reduce((best, n) => (newer(n, best) ? n : best));
-}
-
-const raw = async (tag, path) => (await get(`https://raw.githubusercontent.com/${REPO}/${tag}/${path}`)).text();
+const latestTag = () => latest(REPO, "THEMES_TAG");
+const raw = (tag, path) => fetchRaw(REPO, tag, path);
 
 async function sync() {
   const tag = await latestTag();

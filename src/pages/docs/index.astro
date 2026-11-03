@@ -1,0 +1,50 @@
+---
+import { getCollection } from "astro:content";
+import DocsLayout from "../../layouts/DocsLayout.astro";
+import { docsNav, DOCS_HOME, SOURCES, hrefFor } from "../../data/docs-nav";
+
+const entries = await getCollection("docs");
+const titles = new Map<string, string>(entries.map((e) => [e.id, e.data.title]));
+const nav = docsNav(titles);
+
+// which release each product's pages describe, from the pages themselves
+const releases = Object.entries(SOURCES).map(([id, source]) => {
+  const first = entries.find((e) => e.data.source === id);
+  return { id, name: id === "community" ? "Community files" : id === "reader" ? "Zacess reader" : source.name, repo: source.repo, label: first ? (first.data.release ? `v${first.data.release}` : first.data.refLabel) : "not synced" };
+});
+---
+<DocsLayout
+  title="Documentation"
+  description="How to install and use every part of Zacess: the reader, the terminal scenes, the terminal games and the code themes, with the contribution guides and a reference sheet for each tool."
+  href={DOCS_HOME}
+>
+  <p>Everything on these pages is drawn from the documentation in each Zacess repository, at the release people can install. Search it from the menu or start with a section.</p>
+  {nav.map((section) => (
+    <section class="docs-home-section" aria-labelledby={`home-${section.id}`}>
+      <h2 id={`home-${section.id}`}>{section.title}</h2>
+      <p>{section.summary}</p>
+      <ul class="docs-list">
+        {section.links.map((link) => (
+          <li>
+            <a href={link.href}>{link.label}</a>
+            {link.children && link.children.length > 0 && (
+              <p>{link.children.map((c) => c.label).join(", ")}</p>
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))}
+  <h2 id="home-releases">Which release these pages describe</h2>
+  <div class="table-scroll" tabindex="0" role="region" aria-labelledby="home-releases">
+    <table>
+      <thead><tr><th scope="col">Part</th><th scope="col">Read from</th><th scope="col">At</th></tr></thead>
+      <tbody>
+        {releases.map((r) => (
+          <tr><td>{r.name}</td><td><a href={`https://github.com/${r.repo}`}>{r.repo}</a></td><td>{r.label}</td></tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p>Found a mistake? Every page links to its source file on GitHub, so a fix there reaches the site with the next release. The <a href={hrefFor("contribute/contributing")}>contributing guide</a> has the steps.</p>
+</DocsLayout>

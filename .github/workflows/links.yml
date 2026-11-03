@@ -1,0 +1,42 @@
+name: Links
+
+# every link the built site makes to another site, checked weekly and on a pull request. The
+# site's own links and fragments are checked by scripts/verify.mjs on every build, so this looks
+# outward only. It is not a deploy gate: a page that has moved elsewhere is fixed, not shipped around
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "41 7 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    name: Check outbound links
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # the documentation sync draws each Mermaid diagram with mermaid-cli, which drives this browser
+      - run: npx puppeteer browsers install chrome
+      - name: Build the site
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: npm run build
+      - name: Check every outbound link in the built pages
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        env:
+          # lifts the rate limit on the many links to GitHub
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          args: --no-progress --scheme https --scheme http --accept 200,204,206,301,302,308 --exclude-path dist/pagefind --max-concurrency 8 "dist/**/*.html"
+          fail: true

@@ -1,0 +1,104 @@
+---
+title: "Scenes command line"
+description: "Running a scene on its own: the commands, the keys, every flag and headless rendering. The watch mode has keys and settings of its own."
+section: "reference"
+order: 44
+product: "Zacess Scenes"
+source: "scenes"
+repo: "zacesshq/scenes"
+ref: "v0.6.0"
+refLabel: "v0.6.0"
+release: "0.6.0"
+path: "docs/usage.md"
+sourceUrl: "https://github.com/zacesshq/scenes/blob/v0.6.0/docs/usage.md"
+---
+
+Running a scene on its own: the commands, the keys, every flag and headless rendering. The
+[watch mode](/docs/scenes/watch-mode/) has keys and settings of its own.
+
+## Run a scene
+
+```sh
+zacess-scenes                       # the sea, in the active theme
+zacess-scenes campfire              # one scene by name
+zacess-scenes lanterns --motion calm
+zacess-scenes snow --theme cream    # in a named theme
+zacess-scenes aurora --duration 10  # stops on its own after ten minutes
+zacess-scenes --shuffle --every 5   # a different scene every five minutes
+zacess-scenes sea --ambient         # with the sound of the sea underneath
+zacess-scenes list                  # every scene and sound set
+zacess-scenes --list-themes
+```
+
+## Keys
+
+| Key | Does |
+| --- | --- |
+| `Space` | Pauses and resumes |
+| `n` | Shows the next scene and names it on the bottom row |
+| `b` or `N` | Shows the scene before |
+| `a` or `m` | Turns the background sound on or off |
+| `+` and `-` (also `]` and `[`) | Raise and lower the background sound's volume by 10 |
+| `h` or `?` | Shows the help line again |
+| `q`, `Esc` or `Ctrl+C` | Quits and gives the terminal back |
+
+`n` and `N` do different things: the lowercase key moves on and the uppercase one goes back. The
+help line shows for a few seconds when a scene starts and then fades. While a scene is paused the
+line says so.
+
+## Commands
+
+| Command | Does |
+| --- | --- |
+| `zacess-scenes watch [job]` | Shows how a project's build or tests stand as a scene, in any language. See [watch mode](/docs/scenes/watch-mode/) |
+| `zacess-scenes follow` | Shows how each command in a shell ended. See [follow mode](/docs/scenes/follow-mode/) |
+| `zacess-scenes follow init <shell>` | Prints the hook for `zsh`, `bash`, `fish` or `powershell` |
+| `zacess-scenes list` | Prints every scene (marked pass, fail or general) and the sound sets |
+| `zacess-scenes config init` | Writes a fully commented config file. Add `--force` to replace one |
+| `zacess-scenes config path` | Prints where the config file is |
+| `zacess-scenes sounds play <set> [event]` | Plays a sound set's tone for an event, `pass` by default |
+| `zacess-scenes scene new <name>` | Writes a commented starter Lua scene into the scenes folder |
+| `zacess-scenes snapshot <scene>` | Draws a scene into an SVG still or JSON frames. See [snapshots](/docs/scenes/snapshots/) |
+
+## Flags
+
+| Flag | Does |
+| --- | --- |
+| `--theme <name>` | A Zacess theme by id, short name or full name, such as `deep-contrast-dark`, `deep-dark` or `Zacess Deep Contrast Dark` |
+| `--scene <name>` | The scene, as an alternative to naming it first |
+| `--motion <level>` | `calm`, `standard` or `lively`. Lively is faster and busier but never changes anything in place faster than standard |
+| `--list-themes` | Prints the themes and marks the one that would be used |
+| `--list-scenes` | Prints the scenes |
+| `--fps <n>` | Frames per second, 1 to 30. The default is 20 |
+| `--slow` | Half speed |
+| `--reduced-motion` | Fewer and slower movements, no lightning and no flicker, at most 12 frames a second |
+| `--duration <minutes>` | Stops after this many minutes, decimals allowed |
+| `--shuffle` | Moves to another scene at random every few minutes, 5 unless `--every` or the config says otherwise |
+| `--every <minutes>` | Minutes between scenes, decimals allowed. On its own it moves through the list in order |
+| `--ambient` | Plays a quiet [background sound](/docs/scenes/sounds/#background-sound) that suits the scene |
+| `--no-ambient` | No background sound, whatever the config says |
+| `--ambient-volume <n>` | The background sound's volume from 0 to 100, 20 by default |
+| `--colour <depth>` | `truecolor` or `256`, when the colour depth is detected wrongly. `--color` also works |
+| `--seed <n>` | Seeds the random numbers, so a run can be repeated exactly |
+| `--headless` | Draws without a terminal and prints the last frame as plain text |
+| `--frames <n>` | How many frames to draw headless. The default is 60 |
+| `--size <WxH>` | Columns and rows for a headless render, such as `20x8` |
+| `-h`, `--help` | The help |
+| `-V`, `--version` | The version and the palette version |
+
+## Headless rendering
+
+`--headless` draws a scene without a terminal and prints the last frame, which is how the tests and
+CI look at every scene in every theme on Linux, macOS and Windows:
+
+```sh
+zacess-scenes sea --headless --frames 60 --size 20x8 --seed 1 --theme deep-dark
+```
+
+The same seed, size, frame count and theme always print the same frame.
+
+> **Tip**
+>
+> Windows PowerShell 5.1 decodes a program's output with the console's code page, so a saved
+> frame shows the block characters as other characters. Run
+> `[Console]::OutputEncoding = [Text.Encoding]::UTF8` first or use PowerShell 7.

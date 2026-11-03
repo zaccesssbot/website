@@ -1,7 +1,7 @@
 # Zacess website
 
-The source of [zacess.com](https://zacess.com): what Zacess is, how it works, the roadmap and our
-accessibility, privacy and security statements.
+The source of [zacess.com](https://zacess.com): what Zacess is, how it works, the roadmap, our
+accessibility, privacy and security statements and the documentation of every Zacess product.
 
 Zacess is a free, open-source reader that turns slides, PDFs, handouts, whiteboards and web pages
 into notes in your own reading profile.
@@ -20,8 +20,9 @@ npm run dev      # local preview
 npm run sync-themes   # copy the latest Zacess Themes release into src/data (build does this too)
 npm run sync-scenes   # the same for Zacess Scenes
 npm run sync-games    # the same for Zacess Games
-npm run build    # static site in dist/
-npm run verify   # headings, links, writing style and the security headers
+npm run sync-docs     # the documentation pages, from every product repository
+npm run build    # static site in dist/, then the search index in dist/pagefind
+npm run verify   # headings, links, writing style, the security headers, the docs and the contrast floors
 npx wrangler deploy --autoconfig=false   # publish dist/ as static assets on Cloudflare
 ```
 
@@ -56,9 +57,40 @@ their rules and keys, the Learn to Code tracks and the release files from the ne
 stills into `public/games/images`. Each publishes its version at `/scenes/version.txt` and
 `/games/version.txt`.
 
+## The documentation
+
+[zacess.com/docs](https://zacess.com/docs/) is drawn from the markdown in each product repository
+rather than written here, so a page can never drift from the release it describes.
+
+1. `scripts/docs-manifest.mjs` lists every page: its address under `/docs/`, the repository and
+   file it comes from and, for a section of a README, the heading to take. The sidebar in
+   `src/data/docs-nav.ts` reads the same list, so the order is decided in one place.
+2. `scripts/sync-docs.mjs` reads Zacess Scenes, Zacess Games and Zacess Themes at their newest
+   release tag (the same tag the product pages use) and the reader and the organisation's community
+   files at the commit the manifest pins. It takes the first heading as the title, drops badges,
+   turns GitHub alerts into plain notes, points links between pages at their addresses here and
+   every other relative link at the file on GitHub at the same ref, copies the images into
+   `public/docs/<source>/images/` and writes one file per page into `src/content/docs/`. A Mermaid
+   block is drawn with mermaid-cli once per high contrast theme into
+   `public/docs/<source>/images/diagrams/`, since the security policy allows no script to draw it in
+   the browser; the page shows the image for the colour mode and keeps the source as text under a
+   disclosure. Drawing needs the browser `npx puppeteer browsers install chrome` fetches. It writes
+   only once every fetch has succeeded and removes pages a newer release dropped. A page whose
+   source file does not exist yet is skipped with a note rather than failing the build.
+3. `src/content.config.ts` loads those files as the `docs` collection; `src/layouts/DocsLayout.astro`
+   draws each one with the sidebar, the "On this page" list, the release it came from and a link to
+   edit it on GitHub. Code blocks are highlighted at build time in the two high contrast themes and
+   their colours written to `/docs/code.css` as classes, since the Content Security Policy allows no
+   inline styles; `/docs/theme.css` carries the page colours from the same themes release and
+   `scripts/check-contrast.mjs` holds every pair to 7:1 for text and 3:1 for lines.
+4. After the build, [Pagefind](https://github.com/Pagefind/pagefind) indexes the documentation pages into
+   `dist/pagefind/`. The search field in the sidebar queries that index in the browser; without
+   JavaScript the sidebar is shown in full instead.
+
 The deploy needs the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets. The
-committed copies are refreshed by running `npm run sync-themes` and committing the result, which is
-only needed for offline builds.
+committed copies are refreshed by running the sync scripts and committing the result, which is
+only needed for offline builds. [`links.yml`](.github/workflows/links.yml) checks every outbound
+link in the built site weekly and on a pull request.
 
 ## Licence
 

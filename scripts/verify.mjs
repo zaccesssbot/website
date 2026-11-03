@@ -1,7 +1,9 @@
-// checks the built site in dist: headings, internal links and fragments, writing rules, the CSP hash
+// checks the built site in dist: headings, internal links and fragments, writing rules, the CSP hash,
+// the documentation's sidebar, code colours and search index and the contrast floors
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, relative } from "node:path";
 import { createHash } from "node:crypto";
+import { spawnSync } from "node:child_process";
 
 const DIST = new URL("../dist/", import.meta.url).pathname;
 const problems = [];
@@ -52,10 +54,14 @@ for (const [file, src] of Object.entries(html)) {
 
   // visible text plus the text people hear or see in attributes
   const attrs = [...src.matchAll(/\s(?:alt|aria-label|content|title)="([^"]*)"/g)].map((m) => m[1]).join("\n");
-  const text = decode(src.replace(/<script[\s\S]*?<\/script>/g, " ").replace(/<style[\s\S]*?<\/style>/g, " ").replace(/<[^>]+>/g, " ") + "\n" + attrs).replace(/\s+/g, " ");
+  // code is commands and characters, not prose, so each piece stands in the text as one word
+  const text = decode(src.replace(/<script[\s\S]*?<\/script>/g, " ").replace(/<style[\s\S]*?<\/style>/g, " ").replace(/<code[\s\S]*?<\/code>/g, " code ").replace(/<[^>]+>/g, " ") + "\n" + attrs).replace(/\s+/g, " ");
+  // a documentation page's text comes from another repository, so the problem names the file to fix
+  const origin = name.startsWith("/docs/") ? src.match(/<a href="(https:\/\/github\.com\/[^"]+)">Edit this page on GitHub<\/a>/)?.[1] : null;
+  const fix = origin ? ` (fix it in ${origin})` : "";
   for (const [re, label] of [[/—/, "em dash"], [/–/, "en dash"], [/, and /, '", and"'], [/, or /, '", or"']]) {
     const m = text.match(new RegExp(`.{0,50}${re.source}.{0,30}`, "g"));
-    if (m) m.forEach((x) => problems.push(`${name}: ${label}: ...${x.trim()}...`));
+    if (m) m.forEach((x) => problems.push(`${name}: ${label}: ...${x.trim()}...${fix}`));
   }
 }
 
@@ -69,18 +75,51 @@ for (const src of Object.values(html)) {
 }
 for (const h of inline) if (!headers.includes(`'${h}'`)) problems.push(`_headers: CSP lacks '${h}'`);
 if (inline.size !== 1) problems.push(`expected one inline script body, found ${inline.size}`);
-for (const need of ["https://static.cloudflareinsights.com", "connect-src 'self' https://cloudflareinsights.com"]) {
+for (const need of ["https://static.cloudflareinsights.com", "connect-src 'self' https://cloudflareinsights.com", "script-src 'self' 'wasm-unsafe-eval'"]) {
   if (!headers.includes(need)) problems.push(`_headers: CSP lacks ${need}`);
 }
 const sec = join(DIST, ".well-known/security.txt");
 if (!existsSync(sec)) problems.push("security.txt missing");
 else for (const field of ["Contact:", "Expires:", "Canonical:", "Policy:"]) if (!readFileSync(sec, "utf8").includes(field)) problems.push(`security.txt lacks ${field}`);
 for (const [file, src] of Object.entries(html)) {
-  for (const page of ["/security/", "/credits/", "/privacy/", "/faq/", "/contact/"]) {
+  for (const page of ["/security/", "/credits/", "/privacy/", "/faq/", "/contact/", "/docs/"]) {
     if (!src.includes(`href="${page}"`)) problems.push(`/${relative(DIST, file)}: footer lacks ${page}`);
   }
 }
 
-console.log(`${pages.length} pages, ${linkCount} internal links and assets checked, inline script hash ${[...inline].join(" ")}`);
+// the canonical address of every page is a page in dist, so a build never names a page it lacks
+for (const [file, src] of Object.entries(html)) {
+  const canonical = src.match(/<link rel="canonical" href="https:\/\/zacess\.com([^"]+)"/)?.[1];
+  if (canonical && !existsSync(fileFor(canonical))) problems.push(`/${relative(DIST, file)}: canonical ${canonical} is not a built page`);
+}
+
+// the documentation: every page carries the sidebar landmark, its code colours are all in
+// /docs/code.css, it shows no image from another origin and the search index was written
+const docsPages = Object.entries(html).filter(([file]) => relative(DIST, file).startsWith("docs/"));
+if (!docsPages.length) problems.push("no documentation pages were built");
+const codeCss = existsSync(join(DIST, "docs/code.css")) ? readFileSync(join(DIST, "docs/code.css"), "utf8") : "";
+for (const [file, src] of docsPages) {
+  const name = "/" + relative(DIST, file);
+  if (!/<nav class="docs-nav" aria-label="Documentation">/.test(src)) problems.push(`${name}: no documentation sidebar landmark`);
+  if (!/<article class="docs-article" data-pagefind-body>/.test(src)) problems.push(`${name}: no article for the search index`);
+  if (/<img[^>]+src="https?:/.test(src)) problems.push(`${name}: image from another origin`);
+  // a Mermaid block is drawn at sync time; one left as code would show its source instead of a diagram
+  if (/language-mermaid|data-language="mermaid"/.test(src)) problems.push(`${name}: a Mermaid block was not drawn as a diagram`);
+  for (const m of src.matchAll(/<figure class="diagram" role="img" aria-label="([^"]*)">/g)) {
+    if (!m[1]) problems.push(`${name}: a diagram has no label`);
+  }
+  for (const m of src.matchAll(/\bsk-[A-Za-z0-9_-]+/g)) {
+    if (!codeCss.includes(`.${m[0]}{`)) problems.push(`${name}: code class ${m[0]} is not in /docs/code.css`);
+  }
+}
+for (const need of ["pagefind/pagefind.js", "pagefind/pagefind-entry.json"]) {
+  if (!existsSync(join(DIST, need))) problems.push(`search index missing: ${need}`);
+}
+
+// the documentation's colours hold the contrast floors
+const contrast = spawnSync(process.execPath, [new URL("./check-contrast.mjs", import.meta.url).pathname], { encoding: "utf8" });
+if (contrast.status !== 0) problems.push(`check-contrast failed:\n${contrast.stdout}${contrast.stderr}`);
+
+console.log(`${pages.length} pages (${docsPages.length} documentation), ${linkCount} internal links and assets checked, inline script hash ${[...inline].join(" ")}`);
 if (problems.length) { console.log(problems.join("\n")); process.exit(1); }
 console.log("all checks passed");

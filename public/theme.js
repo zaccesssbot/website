@@ -99,33 +99,34 @@
   show(stored());
 })();
 
-// narrow-screen menu: a disclosure button that shows or hides the navigation. Without the script the
-// button stays hidden and the navigation is shown as a wrapped list instead
+// narrow-screen menu: a details element whose summary is the Menu button, so it opens and closes
+// with no script. The script adds the aria state, Escape with the focus back on the button and
+// closing when the focus or a click leaves the list
 (function () {
-  var button = document.querySelector(".menu-toggle");
-  var menu = document.getElementById("site-menu");
-  if (!button || !menu) return;
+  var menu = document.querySelector(".site-menu");
+  var summary = menu && menu.querySelector("summary");
+  if (!menu || !summary) return;
 
-  function isOpen() { return button.getAttribute("aria-expanded") === "true"; }
-  function set(open, returnFocus) {
-    button.setAttribute("aria-expanded", String(open));
-    menu.classList.toggle("open", open);
-    if (!open && returnFocus) button.focus();
+  function sync() { summary.setAttribute("aria-expanded", String(menu.open)); }
+  function close(returnFocus) {
+    if (!menu.open) return;
+    menu.open = false;
+    if (returnFocus) summary.focus();
   }
-
-  button.addEventListener("click", function () { set(!isOpen()); });
+  menu.addEventListener("toggle", sync);
+  sync();
   document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape" && isOpen() && !event.defaultPrevented) set(false, true);
+    if (event.key === "Escape" && menu.open && !event.defaultPrevented) { event.preventDefault(); close(true); }
   });
   // tabbing or clicking away from the menu closes it
   menu.addEventListener("focusout", function (event) {
     var next = event.relatedTarget;
-    if (isOpen() && next && !menu.contains(next) && next !== button) set(false);
+    if (menu.open && next && !menu.contains(next)) close(false);
   });
   document.addEventListener("click", function (event) {
-    if (isOpen() && !event.target.closest(".site-header")) set(false);
+    if (menu.open && !event.target.closest(".site-menu")) close(false);
   });
-  // the wide layout has no menu, so nothing is left open behind it
+  // the wide layout shows the list without the button, so nothing is left open behind it
   var wide = window.matchMedia("(min-width: 68rem)");
-  if (wide.addEventListener) wide.addEventListener("change", function (m) { if (m.matches) set(false); });
+  if (wide.addEventListener) wide.addEventListener("change", function (m) { if (m.matches) close(false); });
 })();

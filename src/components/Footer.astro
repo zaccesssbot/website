@@ -1,6 +1,10 @@
 ---
 import { FOOTER_COLUMNS, SITE } from "../site";
 const path = Astro.url.pathname;
+// the year the site went up, then the year of the build, written as plain numbers
+const FIRST_YEAR = 2026;
+const year = new Date().getFullYear();
+const years = year > FIRST_YEAR ? `${FIRST_YEAR} to ${year}` : `${FIRST_YEAR}`;
 ---
 <footer class="site-footer">
   <div class="wrap">
@@ -26,7 +30,7 @@ const path = Astro.url.pathname;
       </nav>
     </div>
     <div class="footer-bottom">
-      <p>Zacess is free and open source under AGPL-3.0.</p>
+      <p>Copyright {years} Zacess. Zacess is free and open source under AGPL-3.0.</p>
       <p><a href={`mailto:${SITE.email}`}>{SITE.email}</a></p>
     </div>
   </div>

@@ -6,6 +6,10 @@ import data from "../../data/scenes.json";
 const REPO = "https://github.com/zacesshq/scenes";
 const RELEASES = `${REPO}/releases/latest`;
 const doc = (path: string) => `${REPO}/blob/main/${path}`;
+// the archive commands name the release this page describes, as the README does
+const ARCHIVE = `shasum -a 256 -c zacess-scenes-${data.tag}-aarch64-apple-darwin.tar.gz.sha256
+tar -xzf zacess-scenes-${data.tag}-aarch64-apple-darwin.tar.gz
+install -m 755 zacess-scenes-${data.tag}-aarch64-apple-darwin/zacess-scenes ~/.local/bin/`;
 
 // README cells use backticks for names; everything else is plain text
 const escape = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -188,15 +192,28 @@ const LUA = `return {
   <section aria-labelledby="install">
     <div class="wrap">
       <h2 id="install">Install</h2>
+      <p class="intro">Four routes, in the order the <a href="/docs/install/scenes/">install page</a> gives them: the shortest for each system first.</p>
       <ol class="steps single">
         <li>
-          <h3>With Cargo</h3>
-          <p>From the release tag on GitHub. Needs Rust 1.85 or later and a C compiler, since Lua is built in.</p>
-          <pre class="snippet" tabindex="0" aria-label="Install command"><code>{`cargo install --locked --git ${REPO} --tag ${data.tag} zacess-scenes`}</code></pre>
+          <h3>Homebrew (macOS and Linux)</h3>
+          <p>The formula installs the release binary for the machine after Homebrew has checked it against the checksum recorded in the formula. <code>brew upgrade zacess-scenes</code> moves to a newer release.</p>
+          <pre class="snippet" tabindex="0" aria-label="Install with Homebrew"><code>brew install zacesshq/tap/zacess-scenes</code></pre>
         </li>
         <li>
-          <h3>Or a release build</h3>
-          <p>Builds for Apple silicon and Intel Macs, Linux on x86-64 and ARM64 and Windows are on the <a href={RELEASES}>latest release</a>, each with a checksum.</p>
+          <h3>winget (Windows)</h3>
+          <p>Each release is submitted to the winget community repository once its files are attached, so the newest version can take a day or two to reach winget. The release archive below is current straight away.</p>
+          <pre class="snippet" tabindex="0" aria-label="Install with winget"><code>winget install Zacess.Scenes</code></pre>
+        </li>
+        <li>
+          <h3>Cargo (crates.io)</h3>
+          <p>Needs Rust 1.85 or later and a C compiler, since Lua 5.4 is built into the program. The crate on <a href="https://crates.io/crates/zacess-scenes">crates.io</a> carries the code, the docs and the licence.</p>
+          <pre class="snippet" tabindex="0" aria-label="Install with Cargo"><code>cargo install --locked zacess-scenes</code></pre>
+        </li>
+        <li>
+          <h3>A release archive</h3>
+          <p>Builds for Apple silicon and Intel Macs, Linux on x86-64 and ARM64 and Windows are on the <a href={RELEASES}>latest release</a>, each with a <code>.sha256</code> file beside it. Download both into the same folder, check the sum, unpack the archive and put <code>zacess-scenes</code> (or <code>zacess-scenes.exe</code>) somewhere on your <code>PATH</code>. On macOS, for Apple silicon:</p>
+          <pre class="snippet" tabindex="0" aria-label="Check and unpack a release archive on macOS"><code>{ARCHIVE}</code></pre>
+          <p>Linux checks the sum with <code>sha256sum -c</code> and Windows compares the hash from <code>Get-FileHash</code> with the one in the <code>.sha256</code> file. The <a href="/docs/install/scenes/">install page</a> has the commands for every system and a script that keeps a machine on the newest release.</p>
         </li>
         <li>
           <h3>For watch mode, bacon</h3>

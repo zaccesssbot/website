@@ -1,0 +1,4 @@
+# addresses the link checker skips: mail links, which it cannot open. The site's own pages are
+# skipped too, since scripts/verify.mjs checks them against the build before they are live
+^mailto:
+^https://zacess\.com/

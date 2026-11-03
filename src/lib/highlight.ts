@@ -1,5 +1,5 @@
-import { createHighlighter, type ShikiTransformer, type ThemeRegistration } from "shiki";
-import { createHash } from "node:crypto";
+import { createHighlighter, type ThemeRegistration } from "shiki";
+import { styleToClass, classes } from "./shiki-classes";
 import data from "../data/themes.json";
 import { SAMPLES } from "../data/samples";
 
@@ -18,27 +18,6 @@ const asTheme = (id: string, json: { name: string; type: string }) =>
 
 export const THEME_IDS = source.map((t) => t.id);
 export const THEME_NAMES: Record<string, string> = Object.fromEntries(source.map((t) => [t.id, t.json.name]));
-
-// the CSP allows style sheets from 'self' only, so every inline style Shiki writes becomes a class.
-// It works on the finished elements because Shiki 4 adds token styles after the tokens hook that
-// transformerStyleToClass from @shikijs/transformers relies on, which left every span styled inline
-const classes = new Map<string, string>();
-function toClass(node: { properties: Record<string, unknown> }) {
-  const style = node.properties.style;
-  if (typeof style !== "string" || !style) return;
-  const name = `sk-${createHash("sha256").update(style).digest("hex").slice(0, 8)}`;
-  classes.set(name, style);
-  delete node.properties.style;
-  const existing = node.properties.class;
-  node.properties.class = existing ? `${existing} ${name}` : name;
-}
-const styleToClass: ShikiTransformer = {
-  name: "zacess:style-to-class",
-  pre: toClass,
-  code: toClass,
-  line: toClass,
-  span: toClass,
-};
 
 let highlighter: Awaited<ReturnType<typeof createHighlighter>> | undefined;
 async function getHighlighter() {

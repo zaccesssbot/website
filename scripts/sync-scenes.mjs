@@ -11,47 +11,15 @@
 // SCENES_TAG pins a tag and GITHUB_TOKEN, when set, lifts the API rate limit.
 import { readFileSync, writeFileSync, readdirSync, mkdirSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
+import { latestTag as latest, raw as fetchRaw, listing as fetchListing } from "./lib/release.mjs";
 
 const REPO = "zacesshq/scenes";
 const DATA = new URL("../src/data/", import.meta.url).pathname;
 const PUBLIC = new URL("../public/scenes/", import.meta.url).pathname;
 const strict = process.argv.includes("--strict");
-const TIMEOUT = 15000;
-
-const headers = { "User-Agent": "zacess-website-sync", Accept: "application/vnd.github+json" };
-if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
-
-async function get(url, init = {}) {
-  const res = await fetch(url, { ...init, signal: AbortSignal.timeout(TIMEOUT) });
-  if (!res.ok) throw new Error(`${url} answered ${res.status}`);
-  return res;
-}
-
-const SEMVER = /^v(\d+)\.(\d+)\.(\d+)$/;
-const newer = (a, b) => {
-  const x = a.match(SEMVER).slice(1).map(Number);
-  const y = b.match(SEMVER).slice(1).map(Number);
-  for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] > y[i];
-  return false;
-};
-
-async function latestTag() {
-  const pinned = process.env.SCENES_TAG?.trim();
-  if (pinned) {
-    if (!SEMVER.test(pinned)) throw new Error(`SCENES_TAG ${pinned} is not a vX.Y.Z tag`);
-    return pinned;
-  }
-  const tags = await (await get(`https://api.github.com/repos/${REPO}/tags?per_page=100`, { headers })).json();
-  const releases = tags.map((t) => t.name).filter((n) => SEMVER.test(n));
-  if (!releases.length) throw new Error(`no vX.Y.Z tags in ${REPO}`);
-  return releases.reduce((best, n) => (newer(n, best) ? n : best));
-}
-
-const raw = async (tag, path) => (await get(`https://raw.githubusercontent.com/${REPO}/${tag}/${path}`)).text();
-const listing = async (tag, path) =>
-  (await (await get(`https://api.github.com/repos/${REPO}/contents/${path}?ref=${tag}`, { headers })).json())
-    .filter((f) => f.type === "file")
-    .map((f) => f.name);
+const latestTag = () => latest(REPO, "SCENES_TAG");
+const raw = (tag, path) => fetchRaw(REPO, tag, path);
+const listing = (tag, path) => fetchListing(REPO, tag, path);
 
 // the rows of the first table after a heading: `name` | description | reduced motion
 function table(readme, heading, source = "the README") {

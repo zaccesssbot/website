@@ -34,6 +34,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # the documentation sync draws each Mermaid diagram with mermaid-cli, which drives this browser
+      - run: npx puppeteer browsers install chrome
       - name: Name the release that started the run
         if: github.event_name == 'repository_dispatch'
         env:
@@ -64,6 +66,13 @@ jobs:
         run: |
           node scripts/sync-games.mjs --strict
           echo "GAMES_TAG=v$(node -p "require('./src/data/games.json').version")" >> "$GITHUB_ENV"
+      - name: Sync the documentation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        # the three tags above are already pinned in the environment, so the pages describe the
+        # same releases as the product pages; the reader and the community files are read at the
+        # commits scripts/docs-manifest.mjs records
+        run: node scripts/sync-docs.mjs --strict
       - name: Check, build and verify
         env:
           PUBLIC_CF_BEACON_TOKEN: ${{ vars.PUBLIC_CF_BEACON_TOKEN }}
