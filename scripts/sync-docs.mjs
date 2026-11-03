@@ -28,6 +28,8 @@ const strict = process.argv.includes("--strict");
 
 const ALERTS = { NOTE: "Note", TIP: "Tip", IMPORTANT: "Important", WARNING: "Warning", CAUTION: "Caution" };
 const MMDC = new URL("../node_modules/.bin/mmdc", import.meta.url).pathname;
+// the GitHub runner's Ubuntu blocks unprivileged user namespaces, so Chromium needs the sandbox flags off
+const PUPPETEER_CONFIG = new URL("./puppeteer-config.json", import.meta.url).pathname;
 const THEMES = JSON.parse(readFileSync(new URL("../src/data/themes.json", import.meta.url), "utf8"));
 const run = promisify(execFile);
 
@@ -76,7 +78,7 @@ async function renderDiagrams(diagrams) {
       writeFileSync(input, d.source);
       for (const name of ["light", "dark"]) {
         const out = join(dir, `${name}.svg`);
-        await run(MMDC, ["-i", input, "-o", out, "-c", configs[name], "-b", "transparent", "-q"]);
+        await run(MMDC, ["-i", input, "-o", out, "-c", configs[name], "-p", PUPPETEER_CONFIG, "-b", "transparent", "-q"]);
         d.files[name] = readFileSync(out);
       }
       const box = d.files.light.toString().match(/viewBox="[-\d.]+ [-\d.]+ ([\d.]+) ([\d.]+)"/);
