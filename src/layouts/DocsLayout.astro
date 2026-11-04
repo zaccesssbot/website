@@ -22,7 +22,7 @@ const nav = docsNav(titles);
 const toc = headings.filter((h) => h.depth === 2);
 const current = (link: string) => (link === href ? "page" : undefined);
 ---
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} wide>
   <Fragment slot="head">
     <link rel="stylesheet" href="/docs/theme.css">
     <link rel="stylesheet" href="/docs/code.css">
@@ -98,4 +98,5 @@ const current = (link: string) => (link === href ? "page" : undefined);
   </div>
   <script is:inline src="/docs-nav.js" defer></script>
   <script is:inline src="/docs-search.js" defer></script>
+  <script is:inline src="/docs-copy.js" defer></script>
 </BaseLayout>

@@ -10,8 +10,10 @@ interface Props {
   /** set false for pages, like the 404, that should not name a canonical address */
   canonical?: boolean;
   noindex?: boolean;
+  /** set true for the documentation, whose reading column needs more than the site's width */
+  wide?: boolean;
 }
-const { title, description, canonical = true, noindex = false } = Astro.props;
+const { title, description, canonical = true, noindex = false, wide = false } = Astro.props;
 const pageTitle = Astro.url.pathname === "/" ? title : `${title}: Zacess`;
 const canonicalUrl = new URL(Astro.url.pathname, SITE.url).href;
 const orgJson = JSON.stringify({
@@ -55,7 +57,7 @@ const beacon = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
 <script type="application/ld+json" set:html={orgJson} />
 <slot name="head" />
 </head>
-<body>
+<body class:list={[{ wide }]}>
 <a class="skip" href="#main">Skip to content</a>
 <Header />
 <main id="main">

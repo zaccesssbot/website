@@ -3,6 +3,10 @@
    Every text pair is at least 7:1 and every line at least 3:1 (scripts/check-contrast.mjs). The
    current page carries a bar beside its name, a shape as well as a weight, never a colour alone */
 .docs-shell { background: var(--docs-bg); color: var(--docs-text); --focus: var(--docs-focus); }
+/* the reading column: 50rem holds about 84 characters of code, which an install command needs, so
+   the page is wider than the rest of the site; 89rem is that column plus the sidebar, the "On this
+   page" column and the gaps, so nothing is left over on a wide screen */
+.wide .wrap { max-width: 89rem; }
 .docs-shell a { color: var(--docs-link); }
 .docs { display: grid; gap: 1.5rem 2.5rem; grid-template-columns: minmax(0, 1fr); padding-top: 1.5rem; padding-bottom: 4rem; }
 @media (min-width: 64rem) {
@@ -67,7 +71,7 @@
 
 /* the article and, on a wide screen, the "On this page" list in a column beside it */
 .docs-main { display: grid; gap: 1.5rem 2.5rem; grid-template-columns: minmax(0, 1fr); align-content: start; }
-@media (min-width: 78rem) {
+@media (min-width: 88rem) {
   .docs-main { grid-template-columns: minmax(0, 1fr) 13rem; }
   .docs-toc { order: 1; position: sticky; top: 5rem; max-height: calc(100vh - 6rem); overflow-y: auto; }
 }
@@ -79,13 +83,13 @@
 .js .docs-toc h2 { display: none; }
 .js .docs-toc ul { display: none; padding-top: 0.5rem; }
 .js .docs-toc ul.open { display: block; }
-@media (min-width: 78rem) {
+@media (min-width: 88rem) {
   .js .docs-toc .docs-toggle { display: none; }
   .js .docs-toc h2 { display: block; }
   .js .docs-toc ul, .js .docs-toc ul.open { display: block; padding-top: 0; }
 }
 
-.docs-article { min-width: 0; max-width: 46rem; }
+.docs-article { min-width: 0; max-width: 50rem; }
 .docs-article h1 { max-width: none; font-size: clamp(2rem, 5vw, 2.8rem); margin-bottom: 0.75rem; }
 .docs-origin { margin: 0 0 2rem; font-size: 0.95rem; color: var(--docs-muted); }
 .docs-origin a { display: inline-block; min-height: 2.75rem; padding-top: 0.45rem; }
@@ -99,17 +103,46 @@
 .docs-body blockquote { margin: 1.5rem 0; padding: 0.25rem 0 0.25rem 1.25rem; border-left: 4px solid var(--docs-text); }
 .docs-body blockquote p { margin: 0 0 0.5rem; }
 .docs-body hr { border: 0; border-top: 1px solid var(--docs-line); margin: 2rem 0; }
-.docs-body table { font-size: 0.95rem; margin: 0; }
+/* a table is never squeezed below 40rem: on a narrow screen it scrolls sideways in its region, so
+   a cell beside a long file name keeps whole phrases instead of one word a line */
+.docs-body table { font-size: 0.95rem; margin: 0; width: max-content; min-width: 100%; max-width: max(100%, 40rem); }
 .docs-body .table-scroll { margin: 1rem 0 1.5rem; }
 .docs-body th, .docs-body td { border-color: var(--docs-line); }
-.docs-body thead th { background: var(--docs-surface-alt); }
+.docs-body thead th { background: var(--docs-surface-alt); white-space: nowrap; }
+/* a file name or a command in a cell is read as one piece: the table scrolls sideways in its
+   region instead of breaking the name */
+.docs-body th code, .docs-body td code { white-space: nowrap; overflow-wrap: normal; }
 .docs-body code { font: 400 0.92em/1.5 ui-monospace, "SF Mono", Menlo, Consolas, "DejaVu Sans Mono", monospace; background: var(--docs-surface-alt); border: 1px solid var(--docs-line); border-radius: 4px; padding: 0.05em 0.3em; overflow-wrap: anywhere; }
 .docs-body a code { color: inherit; }
 /* code blocks: the two high contrast themes' colours come through /docs/code.css as classes; the
    light or dark variable each class sets is chosen here, with the site's colour mode */
-.docs-body pre { margin: 1rem 0 1.5rem; padding: 0.9rem 1rem; overflow-x: auto; border: 1px solid var(--docs-line); border-radius: 8px; font-size: 0.95rem; line-height: 1.6; tab-size: 4; scrollbar-width: auto; }
-.docs-body pre code { background: none; border: 0; padding: 0; font-size: inherit; line-height: inherit; }
+.docs-body pre { margin: 0; padding: 0.9rem 1rem; overflow-x: auto; border: 1px solid var(--docs-line); border-radius: 8px; font-size: 0.95rem; line-height: 1.6; tab-size: 4; white-space: pre; }
+/* a command is never broken across lines: the block scrolls sideways instead, on a scrollbar
+   that is always drawn, in the muted text colour on the alternate surface, a line above it. The
+   standard scrollbar properties switch the ::-webkit-scrollbar rules off in a browser that knows
+   both and draws its own hiding scrollbar, so they are written for the browsers without the
+   pseudo-elements only */
+@supports not selector(::-webkit-scrollbar) {
+  .docs-body pre, .docs-body .table-scroll { scrollbar-width: auto; scrollbar-color: var(--docs-muted) var(--docs-surface-alt); }
+}
+.docs-body pre::-webkit-scrollbar, .docs-body .table-scroll::-webkit-scrollbar { -webkit-appearance: none; height: 0.85rem; }
+.docs-body pre::-webkit-scrollbar-track, .docs-body .table-scroll::-webkit-scrollbar-track { background: var(--docs-surface-alt); border-top: 1px solid var(--docs-line); }
+.docs-body pre::-webkit-scrollbar-thumb, .docs-body .table-scroll::-webkit-scrollbar-thumb { background: var(--docs-muted); border: 0.2rem solid var(--docs-surface-alt); border-radius: 0.5rem; }
+.docs-body pre code { background: none; border: 0; padding: 0; font-size: inherit; line-height: inherit; white-space: pre; overflow-wrap: normal; }
 .docs-body pre:focus-visible { outline-offset: -4px; }
+/* the Copy button sits in the top right corner of its block, 44 pixels each way, above the code
+   rather than over it; it is drawn once the script that works it has loaded */
+.docs-code { position: relative; margin: 1rem 0 1.5rem; }
+.code-copy {
+  display: none; position: absolute; top: 0.4rem; right: 0.4rem; z-index: 1; align-items: center; gap: 0.4rem;
+  min-width: 2.75rem; min-height: 2.75rem; padding: 0.4rem 0.75rem; font: inherit; font-size: 0.9rem; font-weight: 700; line-height: 1.2;
+  color: var(--docs-text); background: var(--docs-surface-alt); border: 1px solid var(--docs-line); border-radius: 8px; cursor: pointer;
+}
+.js .code-copy { display: inline-flex; }
+.js .docs-code > pre { padding-top: 3.4rem; }
+.code-copy svg { width: 1.1rem; height: 1.1rem; flex: none; }
+.code-copy:hover { border-color: var(--docs-text); }
+.code-copy[data-copied] { border-color: var(--docs-text); box-shadow: inset 0 0 0 1px var(--docs-text); }
 .docs-body pre, .docs-body pre span { color: var(--shiki-light, var(--docs-text)); background-color: var(--shiki-light-bg, transparent); font-style: var(--shiki-light-font-style, normal); font-weight: var(--shiki-light-font-weight, normal); text-decoration: var(--shiki-light-text-decoration, none); }
 .docs-body pre { background-color: var(--shiki-light-bg, var(--docs-surface)); }
 :root[data-theme="dark"] .docs-body pre, :root[data-theme="dark"] .docs-body pre span { color: var(--shiki-dark, var(--docs-text)); background-color: var(--shiki-dark-bg, transparent); font-style: var(--shiki-dark-font-style, normal); font-weight: var(--shiki-dark-font-weight, normal); text-decoration: var(--shiki-dark-text-decoration, none); }
@@ -130,10 +163,11 @@
 
 @media (forced-colors: active) {
   .docs-tree a[aria-current="page"]::before { background: CanvasText; }
-  .docs-toggle, .docs-list li, .docs-results-list li, .docs-body pre, .docs-body img { border-color: CanvasText; }
+  .docs-toggle, .docs-list li, .docs-results-list li, .docs-body pre, .docs-body img, .code-copy { border-color: CanvasText; }
 }
 @media print {
-  .docs-side, .docs-toc, .docs-toggle { display: none !important; }
+  .docs-side, .docs-toc, .docs-toggle, .code-copy { display: none !important; }
+  .js .docs-code > pre { padding-top: 0.9rem; }
   .docs { display: block; }
 }
 
@@ -150,4 +184,4 @@
 }
 .diagram details { margin: 0.75rem 0 0; border: 1px solid var(--docs-line); border-radius: 8px; }
 .diagram summary { cursor: pointer; min-height: 2.75rem; padding: 0.6rem 1rem; font-weight: 700; }
-.diagram details > pre { margin: 0 1rem 1rem; }
+.diagram details .docs-code { margin: 0 1rem 1rem; }
