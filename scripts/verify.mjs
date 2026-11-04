@@ -108,6 +108,11 @@ for (const [file, src] of docsPages) {
   for (const m of src.matchAll(/<figure class="diagram" role="img" aria-label="([^"]*)">/g)) {
     if (!m[1]) problems.push(`${name}: a diagram has no label`);
   }
+  // every code block carries its Copy button; the script that works it is on the page
+  const pres = (src.match(/<pre[\s>]/g) || []).length;
+  const buttons = (src.match(/<button type="button" class="code-copy" aria-label="Copy this code">/g) || []).length;
+  if (pres !== buttons) problems.push(`${name}: ${pres} code blocks but ${buttons} copy buttons`);
+  if (pres && !src.includes('src="/docs-copy.js"')) problems.push(`${name}: code blocks without /docs-copy.js`);
   for (const m of src.matchAll(/\bsk-[A-Za-z0-9_-]+/g)) {
     if (!codeCss.includes(`.${m[0]}{`)) problems.push(`${name}: code class ${m[0]} is not in /docs/code.css`);
   }

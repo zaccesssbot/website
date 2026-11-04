@@ -39,6 +39,35 @@ const scrollTables = {
   ],
 };
 
+// every code block carries a Copy button beside it, in the page itself so a build can be checked
+// for it; the style sheet shows the button only once public/docs-copy.js can make it work, so a
+// page without script shows the block alone
+/**
+ * @param {string} tagName
+ * @param {import("hast").Properties} properties
+ * @param {import("hast").ElementContent[]} [children]
+ * @returns {import("hast").Element}
+ */
+const el = (tagName, properties, children = []) => ({ type: "element", tagName, properties, children });
+/** @type {import("satteri").HastPluginDefinition} */
+const copyButtons = {
+  name: "zacess:copy-buttons",
+  element: {
+    filter: ["pre"],
+    visit(node, ctx) {
+      ctx.wrapNode(node, el("div", { className: ["docs-code"] }, [
+        el("button", { type: "button", className: ["code-copy"], ariaLabel: "Copy this code" }, [
+          el("svg", { viewBox: "0 0 24 24", ariaHidden: "true", focusable: "false", fill: "none", stroke: "currentColor", strokeWidth: "2.2", strokeLinecap: "round", strokeLinejoin: "round" }, [
+            el("rect", { x: "9", y: "9", width: "11", height: "11", rx: "2" }),
+            el("path", { d: "M15 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h3" }),
+          ]),
+          el("span", { className: ["code-copy-label"] }, [{ type: "text", value: "Copy" }]),
+        ]),
+      ]));
+    },
+  },
+};
+
 export default defineConfig({
   site: "https://zacess.com",
   trailingSlash: "always",
@@ -52,7 +81,7 @@ export default defineConfig({
   markdown: {
     // the documentation is written in plain punctuation and must stay that way: no curly quotes
     // and no dash a page would be failed for
-    processor: satteri({ features: { smartPunctuation: false }, hastPlugins: [scrollTables] }),
+    processor: satteri({ features: { smartPunctuation: false }, hastPlugins: [scrollTables, copyButtons] }),
     shikiConfig: {
       themes: { light: theme("high-contrast-light"), dark: theme("high-contrast-dark") },
       defaultColor: false,

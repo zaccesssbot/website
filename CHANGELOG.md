@@ -7,6 +7,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-03
+
+### Added
+
+- A Copy button on every code block in the documentation, 44 pixels each way, that reads out the
+  copy and works from the keyboard.
+- `npm run verify` checks that every code block in the documentation carries its Copy button.
+
+### Changed
+
+- The documentation's reading column is wider, so an install command of about 80 characters fits
+  on a 1190 pixel screen and more on a wider one. A longer command scrolls sideways on a scrollbar
+  that is always drawn in both colour modes and is never broken across lines.
+- A file name or a command in a table cell stays whole; the table scrolls sideways in its region.
+
 ## [0.2.0] - 2026-11-03
 
 ### Added
@@ -33,5 +48,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   search needs, the canonical address of every page and the contrast floors.
 - Routine tidy-up.
 
-[Unreleased]: https://github.com/zacesshq/website/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/zacesshq/website/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/zacesshq/website/releases/tag/v0.3.0
 [0.2.0]: https://github.com/zacesshq/website/releases/tag/v0.2.0
